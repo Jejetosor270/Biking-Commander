@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": false,
+    "outDir": ".test-dist",
+    "rootDir": "src",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "types": ["node"]
+  },
+  "include": [
+    "src/components/RouteForm.test.tsx",
+    "src/components/RouteForm.tsx",
+    "src/domain/**/*.ts",
+    "src/routing/bRouterProvider.test.ts",
+    "src/routing/bRouterProvider.ts",
+    "src/routing/routingProviderConfig.test.ts",
+    "src/routing/routingProviderConfig.ts",
+    "src/services/gpx.test.ts",
+    "src/services/gpx.ts"
+  ]
+}

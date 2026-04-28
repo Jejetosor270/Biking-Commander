@@ -1,0 +1,324 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.12.1
+2 info using node@v24.15.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\jerom\Documents\GitHub\Biking Commander\.npmrc
+5 silly config load:file:C:\Users\jerom\.npmrc
+6 silly config load:file:C:\Users\jerom\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache" "--ignore-scripts"
+9 verbose logfile logs-max:10 dir:C:\Users\jerom\Documents\GitHub\Biking Commander\.npm-cache\_logs\2026-04-28T17_22_23_570Z-
+10 verbose logfile C:\Users\jerom\Documents\GitHub\Biking Commander\.npm-cache\_logs\2026-04-28T17_22_23_570Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 silly reify mark retired [
+14 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\expect'
+14 silly reify ]
+15 silly reify mark retired [
+15 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\pretty-format'
+15 silly reify ]
+16 silly reify mark retired [
+16 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\runner'
+16 silly reify ]
+17 silly reify mark retired [
+17 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\snapshot'
+17 silly reify ]
+18 silly reify mark retired [
+18 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\spy'
+18 silly reify ]
+19 silly reify mark retired [
+19 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\utils'
+19 silly reify ]
+20 silly reify mark retired [
+20 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\assertion-error'
+20 silly reify ]
+21 silly reify mark retired [
+21 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\cac'
+21 silly reify ]
+22 silly reify mark retired [
+22 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\chai'
+22 silly reify ]
+23 silly reify mark retired [
+23 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\check-error'
+23 silly reify ]
+24 silly reify mark retired [
+24 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\deep-eql'
+24 silly reify ]
+25 silly reify mark retired [
+25 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\es-module-lexer'
+25 silly reify ]
+26 silly reify mark retired [
+26 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\estree-walker'
+26 silly reify ]
+27 silly reify mark retired [
+27 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\expect-type'
+27 silly reify ]
+28 silly reify mark retired [
+28 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\loupe'
+28 silly reify ]
+29 silly reify mark retired [
+29 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\magic-string'
+29 silly reify ]
+30 silly reify mark retired [
+30 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\pathe'
+30 silly reify ]
+31 silly reify mark retired [
+31 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\pathval'
+31 silly reify ]
+32 silly reify mark retired [
+32 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\siginfo'
+32 silly reify ]
+33 silly reify mark retired [
+33 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\stackback'
+33 silly reify ]
+34 silly reify mark retired [
+34 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\std-env'
+34 silly reify ]
+35 silly reify mark retired [
+35 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinybench'
+35 silly reify ]
+36 silly reify mark retired [
+36 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyexec'
+36 silly reify ]
+37 silly reify mark retired [
+37 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinypool'
+37 silly reify ]
+38 silly reify mark retired [
+38 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyrainbow'
+38 silly reify ]
+39 silly reify mark retired [
+39 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyspy'
+39 silly reify ]
+40 silly reify mark retired [
+40 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\vite-node',
+40 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node',
+40 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node.cmd',
+40 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node.ps1'
+40 silly reify ]
+41 silly reify mark retired [
+41 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\vitest',
+41 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest',
+41 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest.cmd',
+41 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest.ps1'
+41 silly reify ]
+42 silly reify mark retired [
+42 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\why-is-node-running',
+42 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running',
+42 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running.cmd',
+42 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running.ps1'
+42 silly reify ]
+43 silly reify moves {
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\expect': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.expect-5rZ8jxZO',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\pretty-format': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.pretty-format-OHSTT4r2',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\runner': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.runner-1VOsCt5J',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\snapshot': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.snapshot-rgn1TLSq',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\spy': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.spy-58Zsa8CK',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\utils': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\@vitest\\.utils-wlGtBZRV',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\assertion-error': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.assertion-error-6cdPhY6L',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\cac': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.cac-dFjLbXlq',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\chai': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.chai-VYOuDlXp',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\check-error': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.check-error-zcDL1ZrL',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\deep-eql': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.deep-eql-lvpXEWzo',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\es-module-lexer': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.es-module-lexer-gWy2yH70',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\estree-walker': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.estree-walker-SfwuYi4a',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\expect-type': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.expect-type-6yANpBg2',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\loupe': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.loupe-9aCfOL6K',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\magic-string': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.magic-string-JxSA8mC2',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\pathe': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.pathe-g0cHiIro',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\pathval': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.pathval-uV81VEro',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\siginfo': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.siginfo-J4rVYVTU',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\stackback': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.stackback-X4oXH76u',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\std-env': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.std-env-FXRD5v7W',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinybench': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.tinybench-PEZM1wuy',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyexec': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.tinyexec-ZSSPgVJM',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinypool': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.tinypool-7prScisA',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyrainbow': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.tinyrainbow-A2iTWYcA',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\tinyspy': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.tinyspy-ZbdOD32K',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\vite-node': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.vite-node-kcuxvZov',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vite-node-15guFQmy',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node.cmd': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vite-node.cmd-qn4LoXWo',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vite-node.ps1': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vite-node.ps1-X6zUy7Pq',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\vitest': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.vitest-n38uc6LX',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vitest-HfIPG58a',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest.cmd': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vitest.cmd-Jp5eIgsV',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\vitest.ps1': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.vitest.ps1-bgpNVCJd',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\why-is-node-running': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.why-is-node-running-l9W2Ld3g',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.why-is-node-running-7C4jITxd',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running.cmd': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.why-is-node-running.cmd-G4gKrVn3',
+43 silly reify   'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\why-is-node-running.ps1': 'C:\\Users\\jerom\\Documents\\GitHub\\Biking Commander\\node_modules\\.bin\\.why-is-node-running.ps1-XtpQAqWG'
+43 silly reify }
+44 silly audit bulk request {
+44 silly audit   '@babel/code-frame': [ '7.29.0' ],
+44 silly audit   '@babel/compat-data': [ '7.29.0' ],
+44 silly audit   '@babel/core': [ '7.29.0' ],
+44 silly audit   '@babel/generator': [ '7.29.1' ],
+44 silly audit   '@babel/helper-compilation-targets': [ '7.28.6' ],
+44 silly audit   '@babel/helper-globals': [ '7.28.0' ],
+44 silly audit   '@babel/helper-module-imports': [ '7.28.6' ],
+44 silly audit   '@babel/helper-module-transforms': [ '7.28.6' ],
+44 silly audit   '@babel/helper-plugin-utils': [ '7.28.6' ],
+44 silly audit   '@babel/helper-string-parser': [ '7.27.1' ],
+44 silly audit   '@babel/helper-validator-identifier': [ '7.28.5' ],
+44 silly audit   '@babel/helper-validator-option': [ '7.27.1' ],
+44 silly audit   '@babel/helpers': [ '7.29.2' ],
+44 silly audit   '@babel/parser': [ '7.29.2' ],
+44 silly audit   '@babel/plugin-transform-react-jsx-self': [ '7.27.1' ],
+44 silly audit   '@babel/plugin-transform-react-jsx-source': [ '7.27.1' ],
+44 silly audit   '@babel/template': [ '7.28.6' ],
+44 silly audit   '@babel/traverse': [ '7.29.0' ],
+44 silly audit   '@babel/types': [ '7.29.0' ],
+44 silly audit   '@esbuild/aix-ppc64': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-arm': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/android-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/darwin-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/darwin-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/freebsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/freebsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-arm': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-ia32': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-loong64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-mips64el': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-ppc64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-riscv64': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-s390x': [ '0.25.12' ],
+44 silly audit   '@esbuild/linux-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/netbsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/netbsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openbsd-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openbsd-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/openharmony-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/sunos-x64': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-arm64': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-ia32': [ '0.25.12' ],
+44 silly audit   '@esbuild/win32-x64': [ '0.25.12' ],
+44 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+44 silly audit   '@jridgewell/remapping': [ '2.3.5' ],
+44 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+44 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+44 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+44 silly audit   '@react-leaflet/core': [ '2.1.0' ],
+44 silly audit   '@rolldown/pluginutils': [ '1.0.0-beta.27' ],
+44 silly audit   '@rollup/rollup-android-arm-eabi': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-android-arm64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-darwin-arm64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-darwin-x64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-freebsd-arm64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-freebsd-x64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-arm-gnueabihf': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-arm-musleabihf': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-arm64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-arm64-musl': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-loong64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-loong64-musl': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-ppc64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-ppc64-musl': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-riscv64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-riscv64-musl': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-s390x-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-x64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-linux-x64-musl': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-openbsd-x64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-openharmony-arm64': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-win32-arm64-msvc': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-win32-ia32-msvc': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-win32-x64-gnu': [ '4.60.2' ],
+44 silly audit   '@rollup/rollup-win32-x64-msvc': [ '4.60.2' ],
+44 silly audit   '@types/babel__core': [ '7.20.5' ],
+44 silly audit   '@types/babel__generator': [ '7.27.0' ],
+44 silly audit   '@types/babel__template': [ '7.4.4' ],
+44 silly audit   '@types/babel__traverse': [ '7.28.0' ],
+44 silly audit   '@types/estree': [ '1.0.8' ],
+44 silly audit   '@types/geojson': [ '7946.0.16' ],
+44 silly audit   '@types/leaflet': [ '1.9.21' ],
+44 silly audit   '@types/node': [ '22.19.17' ],
+44 silly audit   '@types/prop-types': [ '15.7.15' ],
+44 silly audit   '@types/react': [ '18.3.28' ],
+44 silly audit   '@types/react-dom': [ '18.3.7' ],
+44 silly audit   '@vitejs/plugin-react': [ '4.7.0' ],
+44 silly audit   'baseline-browser-mapping': [ '2.10.24' ],
+44 silly audit   browserslist: [ '4.28.2' ],
+44 silly audit   'caniuse-lite': [ '1.0.30001791' ],
+44 silly audit   'convert-source-map': [ '2.0.0' ],
+44 silly audit   csstype: [ '3.2.3' ],
+44 silly audit   debug: [ '4.4.3' ],
+44 silly audit   'electron-to-chromium': [ '1.5.344' ],
+44 silly audit   esbuild: [ '0.25.12' ],
+44 silly audit   escalade: [ '3.2.0' ],
+44 silly audit   fdir: [ '6.5.0' ],
+44 silly audit   fsevents: [ '2.3.3' ],
+44 silly audit   gensync: [ '1.0.0-beta.2' ],
+44 silly audit   'js-tokens': [ '4.0.0' ],
+44 silly audit   jsesc: [ '3.1.0' ],
+44 silly audit   json5: [ '2.2.3' ],
+44 silly audit   leaflet: [ '1.9.4' ],
+44 silly audit   'loose-envify': [ '1.4.0' ],
+44 silly audit   'lru-cache': [ '5.1.1' ],
+44 silly audit   'lucide-react': [ '0.468.0' ],
+44 silly audit   ms: [ '2.1.3' ],
+44 silly audit   nanoid: [ '3.3.11' ],
+44 silly audit   'node-releases': [ '2.0.38' ],
+44 silly audit   picocolors: [ '1.1.1' ],
+44 silly audit   picomatch: [ '4.0.4' ],
+44 silly audit   postcss: [ '8.5.12' ],
+44 silly audit   react: [ '18.3.1' ],
+44 silly audit   'react-dom': [ '18.3.1' ],
+44 silly audit   'react-leaflet': [ '4.2.1' ],
+44 silly audit   'react-refresh': [ '0.17.0' ],
+44 silly audit   rollup: [ '4.60.2' ],
+44 silly audit   scheduler: [ '0.23.2' ],
+44 silly audit   semver: [ '6.3.1' ],
+44 silly audit   'source-map-js': [ '1.2.1' ],
+44 silly audit   tinyglobby: [ '0.2.16' ],
+44 silly audit   typescript: [ '5.9.3' ],
+44 silly audit   'undici-types': [ '6.21.0' ],
+44 silly audit   'update-browserslist-db': [ '1.2.3' ],
+44 silly audit   vite: [ '6.4.2' ],
+44 silly audit   yallist: [ '3.1.1' ]
+44 silly audit }
+45 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 438ms
+46 silly audit report {}
+47 silly REMOVE node_modules/why-is-node-running
+48 silly REMOVE node_modules/vitest
+49 silly REMOVE node_modules/vitest/node_modules/vite
+50 silly REMOVE node_modules/vitest/node_modules/esbuild
+51 silly REMOVE node_modules/vitest/node_modules/@vitest/mocker
+52 silly REMOVE node_modules/vitest/node_modules/@esbuild/win32-x64
+53 silly REMOVE node_modules/vite-node
+54 silly REMOVE node_modules/vite-node/node_modules/vite
+55 silly REMOVE node_modules/vite-node/node_modules/esbuild
+56 silly REMOVE node_modules/vite-node/node_modules/@esbuild/win32-x64
+57 silly REMOVE node_modules/tinyspy
+58 silly REMOVE node_modules/tinyrainbow
+59 silly REMOVE node_modules/tinypool
+60 silly REMOVE node_modules/tinyexec
+61 silly REMOVE node_modules/tinybench
+62 silly REMOVE node_modules/std-env
+63 silly REMOVE node_modules/stackback
+64 silly REMOVE node_modules/siginfo
+65 silly REMOVE node_modules/pathval
+66 silly REMOVE node_modules/pathe
+67 silly REMOVE node_modules/magic-string
+68 silly REMOVE node_modules/loupe
+69 silly REMOVE node_modules/expect-type
+70 silly REMOVE node_modules/estree-walker
+71 silly REMOVE node_modules/es-module-lexer
+72 silly REMOVE node_modules/deep-eql
+73 silly REMOVE node_modules/check-error
+74 silly REMOVE node_modules/chai
+75 silly REMOVE node_modules/cac
+76 silly REMOVE node_modules/assertion-error
+77 silly REMOVE node_modules/@vitest/utils
+78 silly REMOVE node_modules/@vitest/spy
+79 silly REMOVE node_modules/@vitest/snapshot
+80 silly REMOVE node_modules/@vitest/runner
+81 silly REMOVE node_modules/@vitest/pretty-format
+82 silly REMOVE node_modules/@vitest/expect
+83 verbose cwd C:\Users\jerom\Documents\GitHub\Biking Commander
+84 verbose os Windows_NT 10.0.26200
+85 verbose node v24.15.0
+86 verbose npm  v11.12.1
+87 verbose exit 0
+88 info ok
