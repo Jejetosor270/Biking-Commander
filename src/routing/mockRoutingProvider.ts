@@ -85,6 +85,58 @@ export class MockRoutingProvider implements RoutingProvider {
     };
   }
 
+  async routeWaypoints(
+    request: RouteRequest,
+    waypoints: LatLng[],
+    variantIndex = 0,
+  ): Promise<RouteOption> {
+    if (waypoints.length < 2) {
+      throw new Error("Mock routing needs at least two waypoints.");
+    }
+
+    const geometry = densifyWaypointGeometry(waypoints);
+    const distanceKm = Number(routeDistanceKm(geometry).toFixed(1));
+    const elevationGainM = chooseElevationGain(request, variantIndex);
+    const elevationProfile = buildElevationProfile(
+      distanceKm,
+      elevationGainM,
+      variantIndex,
+    );
+    const score = buildRouteScore({
+      routeType: request.routeType,
+      distanceKm,
+      elevationGainM,
+      avoidMainRoads: request.preferences.avoidMainRoads,
+      difficulty: request.preferences.difficulty,
+      variantIndex,
+    });
+
+    return {
+      id: `mock-waypoints-${request.id}-${variantIndex + 1}`,
+      requestId: request.id,
+      name: `Mock waypoint route ${variantIndex + 1}`,
+      provider: this.id,
+      generatedAt: new Date().toISOString(),
+      routeType: request.routeType,
+      shape: request.preferences.shape,
+      distanceKm,
+      elevationGainM,
+      estimatedDurationMinutes: estimateDurationMinutes(
+        distanceKm,
+        elevationGainM,
+        request.routeType,
+      ),
+      geometry,
+      surfaceBreakdown: buildSurfaceBreakdown(request.routeType, variantIndex),
+      elevationProfile,
+      score,
+      waypoints: request.preferences.waypoints,
+      allowsFerries: request.preferences.allowFerries,
+      relaxedConstraints: [],
+      summary: "Mock route snapped through manual waypoints.",
+    };
+  }
+
   private buildOption(
     request: RouteRequest,
     start: LatLng,
@@ -137,6 +189,7 @@ export class MockRoutingProvider implements RoutingProvider {
       elevationProfile,
       score,
       waypoints: request.preferences.waypoints,
+      allowsFerries: request.preferences.allowFerries,
       relaxedConstraints,
       summary: buildRouteSummary(request, geometry),
     };
@@ -240,4 +293,24 @@ function buildRouteSummary(request: RouteRequest, geometry: LatLng[]): string {
       : "French-side";
   const bikeLabel = request.routeType === "road" ? "road" : "trail";
   return `${regionHint} ${bikeLabel} option tuned for ${request.preferences.difficulty} riding.`;
+}
+
+function densifyWaypointGeometry(waypoints: LatLng[]): LatLng[] {
+  return waypoints.flatMap((point, index) => {
+    if (index === 0) {
+      return [point];
+    }
+
+    const previous = waypoints[index - 1];
+    const steps = 8;
+
+    return Array.from({ length: steps }, (_, stepIndex) => {
+      const progress = (stepIndex + 1) / steps;
+
+      return {
+        lat: previous.lat + (point.lat - previous.lat) * progress,
+        lng: previous.lng + (point.lng - previous.lng) * progress,
+      };
+    });
+  });
 }

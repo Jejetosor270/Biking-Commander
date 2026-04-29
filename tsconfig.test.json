@@ -12,7 +12,13 @@
   "include": [
     "src/components/RouteForm.test.tsx",
     "src/components/RouteForm.tsx",
+    "src/autoLoopGenerator.test.ts",
+    "src/autoLoopGenerator.ts",
     "src/domain/**/*.ts",
+    "src/reliableRouteBuilder.test.ts",
+    "src/reliableRouteBuilder.ts",
+    "src/routeScoring.test.ts",
+    "src/routeScoring.ts",
     "src/routing/bRouterProvider.test.ts",
     "src/routing/bRouterProvider.ts",
     "src/routing/routingProviderConfig.test.ts",

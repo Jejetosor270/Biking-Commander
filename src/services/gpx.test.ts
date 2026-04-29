@@ -64,6 +64,23 @@ describe("route geometry rendering and export", () => {
     assert.equal(routeModeBadgeLabel(createRouteOption("mock")), "Mock route");
     assert.equal(routeModeBadgeLabel(createRouteOption("brouter")), null);
   });
+
+  it("blocks GPX export for rejected ferry routes", () => {
+    const route = {
+      ...createRouteOption("brouter"),
+      allowsFerries: false,
+      transportSegments: [
+        {
+          kind: "ferry" as const,
+          description: "Ferry crossing detected in routing metadata.",
+          tags: { route: "ferry" },
+        },
+      ],
+    };
+
+    assert.throws(() => routeToGpx(route), /GPX export blocked/);
+    assert.doesNotThrow(() => routeToGpx({ ...route, allowsFerries: true }));
+  });
 });
 
 function createRouteOption(provider: string): RouteOption {

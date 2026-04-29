@@ -1,4 +1,4 @@
-import type { RouteGenerationResult, RouteRequest } from "../domain/types";
+import type { LatLng, RouteGenerationResult, RouteOption, RouteRequest } from "../domain/types";
 
 export type RoutingProviderMode = "mock" | "real";
 
@@ -7,6 +7,11 @@ export interface RoutingProvider {
   label: string;
   mode: RoutingProviderMode;
   generateRoutes(request: RouteRequest): Promise<RouteGenerationResult>;
+  routeWaypoints(
+    request: RouteRequest,
+    waypoints: LatLng[],
+    variantIndex?: number,
+  ): Promise<RouteOption>;
 }
 
 export class RoutingProviderError extends Error {

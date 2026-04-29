@@ -1,6 +1,12 @@
 import type { RouteOption } from "../domain/types";
 
 export function routeToGpx(route: RouteOption): string {
+  if (route.transportSegments?.length && !route.allowsFerries) {
+    throw new Error(
+      "GPX export blocked because this route contains a ferry or non-road transport link.",
+    );
+  }
+
   const points = route.geometry
     .map((point, index) => {
       const elevation =

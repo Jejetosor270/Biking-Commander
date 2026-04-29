@@ -131,6 +131,13 @@ h3 {
   margin-left: auto;
 }
 
+.mode-helper {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
 .segmented,
 .preset-grid,
 .future-grid,
@@ -252,6 +259,33 @@ input[type="range"] {
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 10px;
+}
+
+.waypoint-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.waypoint-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px 28px 28px;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfa;
+  padding: 8px;
+}
+
+.waypoint-row span {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  align-items: center;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 750;
 }
 
 .token {

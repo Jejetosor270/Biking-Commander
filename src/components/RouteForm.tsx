@@ -1,15 +1,13 @@
 import {
+  ArrowDown,
+  ArrowUp,
   Bike,
   CloudSun,
-  Coffee,
-  Droplet,
-  Eye,
   Flag,
   LocateFixed,
   MapPin,
   Mountain,
   Navigation,
-  Plus,
   RefreshCcw,
   Shuffle,
   SlidersHorizontal,
@@ -18,15 +16,12 @@ import {
   WifiOff,
   Wind,
 } from "lucide-react";
-import { useState } from "react";
 import { DIFFICULTY_PRESETS } from "../domain/presets";
 import type {
   AvoidZone,
   DifficultyPreset,
   RouteRequest,
-  RouteShape,
   RouteType,
-  WaypointType,
 } from "../domain/types";
 
 interface RouteFormProps {
@@ -38,29 +33,16 @@ interface RouteFormProps {
   onRequestChange: (request: RouteRequest) => void;
   onGenerate: () => void;
   onSurprise: () => void;
+  onUseCurrentLocation: () => void;
   onDrawAvoidZonesChange: (enabled: boolean) => void;
   onRemoveAvoidZone: (zoneId: string) => void;
+  onReorderWaypoint: (waypointId: string, direction: -1 | 1) => void;
 }
 
 const ROUTE_TYPES: Array<{ value: RouteType; label: string; icon: typeof Bike }> = [
   { value: "road", label: "Road bike", icon: Bike },
   { value: "trail", label: "Trail / MTB", icon: Mountain },
 ];
-
-const SHAPES: Array<{ value: RouteShape; label: string; icon: typeof MapPin }> = [
-  { value: "loop", label: "Loop", icon: RefreshCcw },
-  { value: "point-to-point", label: "Point to point", icon: Navigation },
-  { value: "current-location-loop", label: "Current loop", icon: LocateFixed },
-  { value: "current-location-to-destination", label: "Current to finish", icon: Flag },
-];
-
-const WAYPOINT_LABELS: Record<WaypointType, string> = {
-  cafe: "Cafe",
-  water: "Water point",
-  viewpoint: "Viewpoint",
-  climb: "Climb",
-  custom: "Custom",
-};
 
 export function RouteForm({
   request,
@@ -71,15 +53,12 @@ export function RouteForm({
   onRequestChange,
   onGenerate,
   onSurprise,
+  onUseCurrentLocation,
   onDrawAvoidZonesChange,
   onRemoveAvoidZone,
+  onReorderWaypoint,
 }: RouteFormProps) {
-  const [waypointType, setWaypointType] = useState<WaypointType>("cafe");
-  const [waypointLabel, setWaypointLabel] = useState("");
-  const shape = request.preferences.shape;
-  const needsStart = shape === "loop" || shape === "point-to-point";
-  const needsFinish =
-    shape === "point-to-point" || shape === "current-location-to-destination";
+  const isReliableMode = request.planningMode === "reliable";
 
   function updateRequest(patch: Partial<RouteRequest>) {
     onRequestChange({ ...request, ...patch });
@@ -105,21 +84,6 @@ export function RouteForm({
         difficulty: preset,
       },
     });
-  }
-
-  function addWaypoint() {
-    const label = waypointLabel.trim() || WAYPOINT_LABELS[waypointType];
-    updatePreferences({
-      waypoints: [
-        ...request.preferences.waypoints,
-        {
-          id: `waypoint-${Date.now()}`,
-          type: waypointType,
-          label,
-        },
-      ],
-    });
-    setWaypointLabel("");
   }
 
   function removeWaypoint(waypointId: string) {
@@ -155,6 +119,38 @@ export function RouteForm({
 
       <section className="form-section">
         <div className="section-heading">
+          <Navigation size={16} />
+          <h2>Mode</h2>
+        </div>
+        <div className="segmented two">
+          <button
+            type="button"
+            className={isReliableMode ? "active" : ""}
+            onClick={() => updateRequest({ planningMode: "reliable" })}
+          >
+            <MapPin size={16} />
+            Reliable Mode
+          </button>
+          <button
+            type="button"
+            className={!isReliableMode ? "active" : ""}
+            onClick={() =>
+              updateRequest({ planningMode: "experimental_auto_loop" })
+            }
+          >
+            <RefreshCcw size={16} />
+            Experimental Auto-Loop
+          </button>
+        </div>
+        <p className="mode-helper">
+          {isReliableMode
+            ? "Build your route by adding waypoints. The app snaps the route to real roads/trails."
+            : "Generate route ideas automatically. Results may vary."}
+        </p>
+      </section>
+
+      <section className="form-section">
+        <div className="section-heading">
           <Bike size={16} />
           <h2>Ride Type</h2>
         </div>
@@ -175,62 +171,52 @@ export function RouteForm({
 
       <section className="form-section">
         <div className="section-heading">
-          <MapPin size={16} />
-          <h2>Shape</h2>
+          <SlidersHorizontal size={16} />
+          <h2>Routing Safety</h2>
         </div>
-        <div className="segmented shape-grid">
-          {SHAPES.map(({ value, label, icon: Icon }) => (
-            <button
-              type="button"
-              key={value}
-              className={shape === value ? "active" : ""}
-              onClick={() => updatePreferences({ shape: value })}
-            >
-              <Icon size={16} />
-              {label}
-            </button>
-          ))}
-        </div>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={request.preferences.allowFerries}
+            onChange={(event) =>
+              updatePreferences({ allowFerries: event.target.checked })
+            }
+          />
+          <span>Allow ferries</span>
+        </label>
+        <p className="mode-helper">
+          When off, routes avoid ferry crossings and non-road transport links.
+        </p>
       </section>
 
       <section className="form-section location-fields">
-        {needsStart ? (
-          <label>
-            <span>Start</span>
-            <input
-              value={request.startLocation?.label ?? ""}
-              onChange={(event) =>
-                updateRequest({
-                  startLocation: {
-                    source: "address",
-                    label: event.target.value,
-                  },
-                })
-              }
-              placeholder="Annecy, France"
-            />
-          </label>
-        ) : null}
-        {needsFinish ? (
-          <label>
-            <span>Finish</span>
-            <input
-              value={request.finishLocation?.label ?? ""}
-              onChange={(event) =>
-                updateRequest({
-                  finishLocation: {
-                    source: "address",
-                    label: event.target.value,
-                  },
-                })
-              }
-              placeholder="Geneva, Switzerland"
-            />
-          </label>
-        ) : null}
+        <label>
+          <span>Start</span>
+          <input
+            value={request.startLocation?.label ?? ""}
+            onChange={(event) =>
+              updateRequest({
+                startLocation: {
+                  source: "address",
+                  label: event.target.value,
+                },
+              })
+            }
+            placeholder="Annecy, France"
+          />
+        </label>
+        <button
+          type="button"
+          className="secondary-button full"
+          onClick={onUseCurrentLocation}
+        >
+          <LocateFixed size={16} />
+          Current location
+        </button>
       </section>
 
-      <section className="form-section">
+      {!isReliableMode ? (
+        <section className="form-section">
         <div className="section-heading">
           <SlidersHorizontal size={16} />
           <h2>Targets</h2>
@@ -290,8 +276,10 @@ export function RouteForm({
           </div>
         ) : null}
       </section>
+      ) : null}
 
-      <section className="form-section">
+      {!isReliableMode ? (
+        <section className="form-section">
         <div className="section-heading">
           <Mountain size={16} />
           <h2>Difficulty</h2>
@@ -310,8 +298,10 @@ export function RouteForm({
           ))}
         </div>
       </section>
+      ) : null}
 
-      <section className="form-section">
+      {!isReliableMode ? (
+        <section className="form-section">
         <div className="section-heading">
           <SlidersHorizontal size={16} />
           <h2>Preferences</h2>
@@ -337,39 +327,25 @@ export function RouteForm({
           <span>Avoid main roads</span>
         </label>
       </section>
+      ) : null}
 
-      <section className="form-section">
+      {isReliableMode ? (
+        <section className="form-section">
         <div className="section-heading">
-          <Coffee size={16} />
-          <h2>Waypoints</h2>
+          <MapPin size={16} />
+          <h2>Manual Waypoints</h2>
         </div>
-        <div className="waypoint-adder">
-          <select
-            value={waypointType}
-            onChange={(event) => setWaypointType(event.target.value as WaypointType)}
-          >
-            <option value="cafe">Cafe</option>
-            <option value="water">Water</option>
-            <option value="viewpoint">Viewpoint</option>
-            <option value="climb">Climb</option>
-            <option value="custom">Custom</option>
-          </select>
-          <input
-            value={waypointLabel}
-            onChange={(event) => setWaypointLabel(event.target.value)}
-            placeholder="Name"
-          />
-          <button type="button" className="icon-button" onClick={addWaypoint} title="Add waypoint">
-            <Plus size={16} />
-          </button>
-        </div>
-        <TokenList
+        <p className="empty-copy">Click the map to set a start and add waypoints.</p>
+        <WaypointOrderList
           waypoints={request.preferences.waypoints}
           onRemoveWaypoint={removeWaypoint}
+          onReorderWaypoint={onReorderWaypoint}
         />
       </section>
+      ) : null}
 
-      <section className="form-section">
+      {!isReliableMode ? (
+        <section className="form-section">
         <div className="section-heading">
           <Flag size={16} />
           <h2>Avoid Zones</h2>
@@ -387,6 +363,7 @@ export function RouteForm({
           onRemoveAvoidZone={onRemoveAvoidZone}
         />
       </section>
+      ) : null}
 
       <section className="form-section">
         <div className="section-heading">
@@ -409,7 +386,7 @@ export function RouteForm({
           type="button"
           className="secondary-button"
           onClick={onSurprise}
-          disabled={status === "loading"}
+          disabled={status === "loading" || isReliableMode}
         >
           <Shuffle size={16} />
           Surprise me
@@ -421,38 +398,65 @@ export function RouteForm({
           disabled={status === "loading"}
         >
           <Navigation size={16} />
-          {status === "loading" ? "Generating" : "Generate routes"}
+          {status === "loading"
+            ? "Generating"
+            : isReliableMode
+              ? "Build route"
+              : "Generate loops"}
         </button>
       </div>
     </aside>
   );
 }
 
-function TokenList({
+function WaypointOrderList({
   waypoints,
   onRemoveWaypoint,
+  onReorderWaypoint,
 }: {
   waypoints: RouteRequest["preferences"]["waypoints"];
   onRemoveWaypoint: (waypointId: string) => void;
+  onReorderWaypoint: (waypointId: string, direction: -1 | 1) => void;
 }) {
   if (waypoints.length === 0) {
-    return <p className="empty-copy">No optional waypoint selected.</p>;
+    return <p className="empty-copy">No waypoints added yet.</p>;
   }
 
   return (
-    <div className="token-list">
-      {waypoints.map((waypoint) => (
-        <span className="token" key={waypoint.id}>
-          {iconForWaypoint(waypoint.type)}
-          {waypoint.label}
+    <div className="waypoint-list">
+      {waypoints.map((waypoint, index) => (
+        <div className="waypoint-row" key={waypoint.id}>
+          <span>
+            <strong>{index + 1}</strong>
+            {waypoint.label}
+          </span>
           <button
             type="button"
+            className="tiny-icon-button"
+            onClick={() => onReorderWaypoint(waypoint.id, -1)}
+            disabled={index === 0}
+            title="Move waypoint up"
+          >
+            <ArrowUp size={13} />
+          </button>
+          <button
+            type="button"
+            className="tiny-icon-button"
+            onClick={() => onReorderWaypoint(waypoint.id, 1)}
+            disabled={index === waypoints.length - 1}
+            title="Move waypoint down"
+          >
+            <ArrowDown size={13} />
+          </button>
+          <button
+            type="button"
+            className="tiny-icon-button"
             onClick={() => onRemoveWaypoint(waypoint.id)}
             title="Remove waypoint"
           >
             <Trash2 size={13} />
           </button>
-        </span>
+        </div>
       ))}
     </div>
   );
@@ -495,24 +499,4 @@ function FutureChip({ icon, label }: { icon: React.ReactNode; label: string }) {
       {label}
     </button>
   );
-}
-
-function iconForWaypoint(type: WaypointType) {
-  if (type === "cafe") {
-    return <Coffee size={13} />;
-  }
-
-  if (type === "water") {
-    return <Droplet size={13} />;
-  }
-
-  if (type === "viewpoint") {
-    return <Eye size={13} />;
-  }
-
-  if (type === "climb") {
-    return <Mountain size={13} />;
-  }
-
-  return <Flag size={13} />;
 }

@@ -12,10 +12,12 @@ import type {
   RouteOption,
   RouteRequest,
   RouteType,
+  Waypoint,
 } from "./domain/types";
 import { resolveRoutingConfig } from "./routing/routingConfig";
 import { createRoutingProviderFromConfig } from "./routing/routingProviderConfig";
 import { validateElevationConstraintInput } from "./domain/routeValidation";
+import { buildReliableRoute, reorderWaypoints } from "./reliableRouteBuilder";
 import { downloadRouteAsGpx } from "./services/gpx";
 import {
   addRouteHistory,
@@ -74,15 +76,23 @@ export function App() {
     try {
       const generationRequest = await withGenerationMetadata(baseRequest);
       setRequest(generationRequest);
-      const result = await provider.generateRoutes(generationRequest);
+      const result =
+        generationRequest.planningMode === "reliable"
+          ? await runReliableGeneration(generationRequest)
+          : await provider.generateRoutes(generationRequest);
 
       if (result.options.length === 0) {
+        const recommendation = result.diagnostics.find((item) =>
+          item.includes("Try Reliable Mode"),
+        );
         setRoutes([]);
         setSelectedRouteId(undefined);
         setStatus("error");
         setDiagnostics(result.diagnostics);
         setRelaxedConstraints(result.relaxedConstraints);
-        setErrorMessage("No route matched the selected hard constraints.");
+        setErrorMessage(
+          recommendation ?? "No route matched the selected hard constraints.",
+        );
         return;
       }
 
@@ -98,6 +108,18 @@ export function App() {
       setSelectedRouteId(undefined);
       setErrorMessage(error instanceof Error ? error.message : "Route generation failed.");
     }
+  }
+
+  async function runReliableGeneration(
+    generationRequest: RouteRequest,
+  ): Promise<{ options: RouteOption[]; relaxedConstraints: RelaxedConstraint[]; diagnostics: string[] }> {
+    const result = await buildReliableRoute(provider, generationRequest);
+
+    return {
+      options: [result.route],
+      relaxedConstraints: [],
+      diagnostics: [],
+    };
   }
 
   async function withGenerationMetadata(baseRequest: RouteRequest): Promise<RouteRequest> {
@@ -168,6 +190,7 @@ export function App() {
         shape: "loop",
         difficulty: preset,
         avoidOutAndBack: true,
+        allowFerries: false,
       },
     };
     setRequest(nextRequest);
@@ -209,6 +232,124 @@ export function App() {
     setFavorites(saveFavoriteRoute(route));
   }
 
+  function exportRoute(route: RouteOption) {
+    try {
+      downloadRouteAsGpx(route);
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "GPX export failed.");
+    }
+  }
+
+  function setCurrentLocationAsStart() {
+    void maybeResolveCurrentLocation({
+      ...request,
+      preferences: {
+        ...request.preferences,
+        shape: "current-location-loop",
+      },
+    }).then((coordinate) => {
+      if (!coordinate) {
+        return;
+      }
+
+      setRequest((current) => ({
+        ...current,
+        startLocation: {
+          source: "current",
+          label: "Current location",
+          coordinate,
+        },
+      }));
+    }).catch((error) => {
+      setStatus("error");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Current location failed.",
+      );
+    });
+  }
+
+  function addPlanningMapPoint(point: LatLng) {
+    if (request.planningMode !== "reliable") {
+      return;
+    }
+
+    if (!request.startLocation?.coordinate) {
+      setRequest((current) => ({
+        ...current,
+        startLocation: {
+          source: "coordinates",
+          label: "Map start",
+          coordinate: point,
+        },
+      }));
+      return;
+    }
+
+    setRequest((current) => ({
+      ...current,
+      preferences: {
+        ...current.preferences,
+        waypoints: [
+          ...current.preferences.waypoints,
+          createMapWaypoint(point, current.preferences.waypoints.length + 1),
+        ],
+      },
+    }));
+  }
+
+  function movePlanningWaypoint(waypointId: string, coordinate: LatLng) {
+    setRequest((current) => {
+      if (waypointId === "start") {
+        return {
+          ...current,
+          startLocation: current.startLocation
+            ? { ...current.startLocation, coordinate }
+            : {
+                source: "coordinates",
+                label: "Map start",
+                coordinate,
+              },
+        };
+      }
+
+      return {
+        ...current,
+        preferences: {
+          ...current.preferences,
+          waypoints: current.preferences.waypoints.map((waypoint) =>
+            waypoint.id === waypointId ? { ...waypoint, coordinate } : waypoint,
+          ),
+        },
+      };
+    });
+  }
+
+  function reorderPlanningWaypoint(waypointId: string, direction: -1 | 1) {
+    setRequest((current) => {
+      const index = current.preferences.waypoints.findIndex(
+        (waypoint) => waypoint.id === waypointId,
+      );
+      const nextIndex = index + direction;
+
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.preferences.waypoints.length) {
+        return current;
+      }
+
+      return {
+        ...current,
+        preferences: {
+          ...current.preferences,
+          waypoints: reorderWaypoints(
+            current.preferences.waypoints,
+            index,
+            nextIndex,
+          ),
+        },
+      };
+    });
+  }
+
   return (
     <main className="app-shell">
       <RouteForm
@@ -220,8 +361,10 @@ export function App() {
         onRequestChange={setRequest}
         onGenerate={() => void runGeneration()}
         onSurprise={surpriseMe}
+        onUseCurrentLocation={setCurrentLocationAsStart}
         onDrawAvoidZonesChange={setDrawAvoidZones}
         onRemoveAvoidZone={removeAvoidZone}
+        onReorderWaypoint={reorderPlanningWaypoint}
       />
 
       <section className="map-and-results">
@@ -231,6 +374,10 @@ export function App() {
           avoidZones={request.preferences.avoidZones}
           drawAvoidZones={drawAvoidZones}
           onAddAvoidZone={addAvoidZone}
+          planningMode={request.planningMode}
+          manualWaypoints={manualMapWaypoints(request)}
+          onAddPlanningPoint={addPlanningMapPoint}
+          onMovePlanningWaypoint={movePlanningWaypoint}
         />
 
         <div className="results-toolbar">
@@ -261,7 +408,9 @@ export function App() {
                   .join(", ")}
               </span>
             ) : null}
-            {diagnostics.length > 0 ? <span>{diagnostics[0]}</span> : null}
+            {diagnostics.length > 0 ? (
+              <span>{diagnostics[diagnostics.length - 1]}</span>
+            ) : null}
           </div>
         ) : null}
 
@@ -293,7 +442,7 @@ export function App() {
                 isFavorite={favorites.some((favorite) => favorite.id === route.id)}
                 onSelect={(nextRoute) => setSelectedRouteId(nextRoute.id)}
                 onSave={saveRoute}
-                onExportGpx={downloadRouteAsGpx}
+                onExportGpx={exportRoute}
                 showProvider={routingConfig.isDevelopment}
               />
             ))}
@@ -328,6 +477,7 @@ function createDefaultRequest(): RouteRequest {
   return {
     id: createId("request"),
     createdAt: new Date().toISOString(),
+    planningMode: "reliable",
     routeType: "road",
     targetDistanceKm: 65,
     useElevationConstraint: false,
@@ -345,6 +495,7 @@ function createDefaultRequest(): RouteRequest {
       shape: "loop",
       avoidOutAndBack: true,
       avoidMainRoads: true,
+      allowFerries: false,
       difficulty: "endurance",
       waypoints: [],
       avoidZones: [],
@@ -358,4 +509,28 @@ function createId(prefix: string): string {
   }
 
   return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function createMapWaypoint(point: LatLng, index: number): Waypoint {
+  return {
+    id: `waypoint-${Date.now()}-${index}`,
+    type: "custom",
+    label: `Waypoint ${index}`,
+    coordinate: point,
+  };
+}
+
+function manualMapWaypoints(request: RouteRequest): Waypoint[] {
+  const start = request.startLocation?.coordinate
+    ? [
+        {
+          id: "start",
+          type: "custom" as const,
+          label: request.startLocation.label || "Start",
+          coordinate: request.startLocation.coordinate,
+        },
+      ]
+    : [];
+
+  return [...start, ...request.preferences.waypoints.filter((waypoint) => waypoint.coordinate)];
 }

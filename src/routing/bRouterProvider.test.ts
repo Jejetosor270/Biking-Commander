@@ -45,7 +45,7 @@ async function main(): Promise<void> {
 
       assert.equal(result.options.length, 3);
       assert.equal(result.options.every((option) => option.provider === "brouter"), true);
-      assert.equal(requestedUrls.length, 3);
+      assert.equal(requestedUrls.length >= 20, true);
       assert.equal(result.options.every((option) => option.geometry.length > 12), true);
     } finally {
       globalThis.fetch = originalFetch;
@@ -81,7 +81,44 @@ async function main(): Promise<void> {
 
       assert.equal(result.options.length, 3);
       assert.equal(result.options.every((option) => option.provider === "osrm"), true);
-      assert.equal(osrmCalls, 3);
+      assert.equal(osrmCalls >= 20, true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  await it("rejects ferry metadata unless ferries are enabled", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = (() =>
+      Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () =>
+          createBRouterGeoJson({
+            ways: [{ tags: { route: "ferry" } }],
+          }),
+      } as Response)) as typeof fetch;
+
+    try {
+      await assert.rejects(
+        () =>
+          new BRouterProvider().routeWaypoints(createRequest(), [
+            { lat: 45.8992, lng: 6.1294 },
+            { lat: 45.91, lng: 6.15 },
+          ]),
+        /ferry_detected/,
+      );
+
+      const allowedRoute = await new BRouterProvider().routeWaypoints(
+        createRequest({ allowFerries: true }),
+        [
+          { lat: 45.8992, lng: 6.1294 },
+          { lat: 45.91, lng: 6.15 },
+        ],
+      );
+
+      assert.equal(allowedRoute.transportSegments?.[0].kind, "ferry");
+      assert.equal(allowedRoute.allowsFerries, true);
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -98,10 +135,13 @@ void main().finally(() => {
   console.log(`${testsRun} tests passed`);
 });
 
-function createRequest(): RouteRequest {
+function createRequest(
+  preferencePatch: Partial<RouteRequest["preferences"]> = {},
+): RouteRequest {
   return {
     id: "request-test",
     createdAt: "2026-04-28T00:00:00.000Z",
+    planningMode: "experimental_auto_loop",
     routeType: "road",
     targetDistanceKm: 10,
     useElevationConstraint: false,
@@ -116,14 +156,16 @@ function createRequest(): RouteRequest {
       shape: "loop",
       avoidOutAndBack: false,
       avoidMainRoads: false,
+      allowFerries: false,
       difficulty: "endurance",
       waypoints: [],
       avoidZones: [],
+      ...preferencePatch,
     },
   };
 }
 
-function createBRouterGeoJson() {
+function createBRouterGeoJson(properties: Record<string, unknown> = {}) {
   return {
     type: "FeatureCollection",
     features: [
@@ -141,6 +183,7 @@ function createBRouterGeoJson() {
           "track-length": 10000,
           "total-time": 1800,
           "plain-ascend": 420,
+          ...properties,
         },
       },
     ],

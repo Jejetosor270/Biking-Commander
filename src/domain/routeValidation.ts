@@ -134,6 +134,9 @@ export function validateRouteOption(
   const avoidsOutAndBack = request.preferences.avoidOutAndBack
     ? !hasOutAndBackHeuristic(option.geometry)
     : true;
+  const avoidsFerries = request.preferences.allowFerries
+    ? true
+    : !routeUsesUnsafeTransport(option);
 
   const violations: string[] = [];
 
@@ -153,6 +156,10 @@ export function validateRouteOption(
     violations.push("Route appears to reuse too much of the same path.");
   }
 
+  if (!avoidsFerries) {
+    violations.push("ferry_detected: Route uses a ferry or non-road transport link.");
+  }
+
   return {
     accepted: violations.length === 0,
     checks: {
@@ -160,9 +167,19 @@ export function validateRouteOption(
       elevationWithinRange,
       loopValid,
       avoidsOutAndBack,
+      avoidsFerries,
     },
     violations,
   };
+}
+
+export function routeUsesUnsafeTransport(option: RouteOption): boolean {
+  return (
+    option.transportSegments?.some(
+      (segment) =>
+        segment.kind === "ferry" || segment.kind === "unsafe_transport",
+    ) ?? false
+  );
 }
 
 export function relaxSoftPreferences(
@@ -219,7 +236,8 @@ export function selectClosestElevationAlternatives(
         validation.checks.distanceWithinTolerance &&
         !validation.checks.elevationWithinRange &&
         validation.checks.loopValid &&
-        validation.checks.avoidsOutAndBack
+        validation.checks.avoidsOutAndBack &&
+        validation.checks.avoidsFerries
       );
     })
     .sort(

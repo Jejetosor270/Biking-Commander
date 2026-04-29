@@ -62,6 +62,19 @@ describe("RouteForm elevation constraint UI", () => {
     assert.match(markup, /Max D\+/);
     assert.equal(markup.match(/required=""/g)?.length, 2);
   });
+
+  it("shows ferry avoidance as an explicit default-off toggle", () => {
+    const markup = renderToStaticMarkup(
+      <RouteForm {...createProps(createRequest())} />,
+    );
+
+    assert.match(markup, /Allow ferries/);
+    assert.match(
+      markup,
+      /When off, routes avoid ferry crossings and non-road transport links\./,
+    );
+    assert.match(markup, /<input type="checkbox"\/><span>Allow ferries<\/span>/);
+  });
 });
 
 function createProps(request: RouteRequest) {
@@ -74,8 +87,10 @@ function createProps(request: RouteRequest) {
     onRequestChange: () => undefined,
     onGenerate: () => undefined,
     onSurprise: () => undefined,
+    onUseCurrentLocation: () => undefined,
     onDrawAvoidZonesChange: () => undefined,
     onRemoveAvoidZone: () => undefined,
+    onReorderWaypoint: () => undefined,
   };
 }
 
@@ -83,6 +98,7 @@ function createRequest(patch: Partial<RouteRequest> = {}): RouteRequest {
   return {
     id: "request-test",
     createdAt: "2026-04-28T00:00:00.000Z",
+    planningMode: "experimental_auto_loop",
     routeType: "road",
     targetDistanceKm: 60,
     useElevationConstraint: false,
@@ -100,6 +116,7 @@ function createRequest(patch: Partial<RouteRequest> = {}): RouteRequest {
       shape: "loop",
       avoidOutAndBack: true,
       avoidMainRoads: true,
+      allowFerries: false,
       difficulty: "endurance",
       waypoints: [],
       avoidZones: [],

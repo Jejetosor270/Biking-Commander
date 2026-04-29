@@ -4,7 +4,8 @@ import {
   buildSurfaceBreakdown,
   estimateDurationMinutes,
 } from "../domain/scoring";
-import { offsetCoordinate, routeDistanceKm } from "../domain/geo";
+import { routeDistanceKm } from "../domain/geo";
+import { generateAutoLoopRoutes } from "../autoLoopGenerator";
 import {
   resolveRoutedDistanceKm,
   validateRoutedGeometry,
@@ -16,17 +17,8 @@ import type {
   RouteGenerationResult,
   RouteOption,
   RouteRequest,
+  RouteTransportSegment,
 } from "../domain/types";
-import {
-  collectResultRelaxedConstraints,
-  relaxSoftPreferences,
-  selectClosestElevationAlternatives,
-  validateRouteOption,
-} from "../domain/routeValidation";
-import {
-  resolveFinishCoordinate,
-  resolveStartCoordinate,
-} from "./locationResolver";
 import type { RoutingProvider } from "./RoutingProvider";
 import { RoutingProviderError } from "./RoutingProvider";
 
@@ -68,12 +60,11 @@ interface ProviderRoute {
   distanceKm: number;
   durationMinutes?: number;
   properties?: Record<string, unknown>;
+  transportSegments?: RouteTransportSegment[];
 }
 
 const BROUTER_ENDPOINT = "https://brouter.de/brouter";
 const OSRM_ENDPOINT = "https://router.project-osrm.org/route/v1/driving";
-const DISTANCE_VARIANTS = [0.94, 1.01, 1.07];
-
 const PROFILE_BY_TYPE = {
   road: "fastbike",
   trail: "mtb",
@@ -87,111 +78,18 @@ export class BRouterProvider implements RoutingProvider {
   constructor(private readonly debugGeometry = false) {}
 
   async generateRoutes(request: RouteRequest): Promise<RouteGenerationResult> {
-    const diagnostics: string[] = [];
-    const strictOptions = await this.generateValidatedOptions(
-      request,
-      [],
-      diagnostics,
-    );
-
-    if (strictOptions.length > 0) {
-      return {
-        options: rankRoutes(request, strictOptions).slice(0, 3),
-        relaxedConstraints: collectResultRelaxedConstraints(strictOptions),
-        diagnostics,
-      };
-    }
-
-    const relaxed = relaxSoftPreferences(request, ["avoidMainRoads"]);
-
-    if (relaxed.relaxedConstraints.length === 0) {
-      throw new RoutingProviderError(
-        "No BRouter or OSRM route matched the selected hard constraints.",
-        diagnostics,
-      );
-    }
-
-    const relaxedOptions = await this.generateValidatedOptions(
-      relaxed.request,
-      relaxed.relaxedConstraints,
-      diagnostics,
-    );
-
-    if (relaxedOptions.length === 0) {
-      throw new RoutingProviderError(
-        "No BRouter or OSRM route matched after soft preferences were relaxed.",
-        diagnostics,
-      );
-    }
-
-    return {
-      options: rankRoutes(relaxed.request, relaxedOptions).slice(0, 3),
-      relaxedConstraints: collectResultRelaxedConstraints(
-        relaxedOptions,
-        relaxed.relaxedConstraints,
-      ),
-      diagnostics,
-    };
+    return generateAutoLoopRoutes(this, request);
   }
 
-  private async generateValidatedOptions(
+  async routeWaypoints(
     request: RouteRequest,
-    relaxedConstraints: RelaxedConstraint[],
-    diagnostics: string[],
-  ): Promise<RouteOption[]> {
-    const start = await resolveStartCoordinate(request, true);
-    const finish = await resolveFinishCoordinate(request, start, true);
-    const candidates = buildRouteCandidates(request, start, finish);
-    const attempts = await Promise.allSettled(
-      candidates.map((candidate) =>
-        this.fetchCandidateRoute(request, candidate, relaxedConstraints),
-      ),
-    );
-    const acceptedOptions: RouteOption[] = [];
-    const rejectedOptions: RouteOption[] = [];
-
-    attempts.forEach((attempt, index) => {
-      if (attempt.status === "rejected") {
-        diagnostics.push(`Alternative ${index + 1}: ${errorMessage(attempt.reason)}`);
-        return;
-      }
-
-      const validation = validateRouteOption(request, attempt.value);
-
-      if (validation.accepted) {
-        acceptedOptions.push(attempt.value);
-      } else {
-        rejectedOptions.push(attempt.value);
-        diagnostics.push(
-          `Alternative ${index + 1}: ${validation.violations.join(" ")}`,
-        );
-      }
-    });
-
-    if (acceptedOptions.length > 0) {
-      return acceptedOptions;
-    }
-
-    const closestElevationAlternatives = selectClosestElevationAlternatives(
-      request,
-      rejectedOptions,
-      relaxedConstraints,
-    );
-
-    if (closestElevationAlternatives.length > 0) {
-      diagnostics.push(
-        "No routed options matched the D+ range; showing closest alternatives.",
-      );
-    }
-
-    return closestElevationAlternatives;
-  }
-
-  private async fetchCandidateRoute(
-    request: RouteRequest,
-    candidate: RouteCandidate,
-    relaxedConstraints: RelaxedConstraint[],
+    waypoints: LatLng[],
+    variantIndex = 0,
   ): Promise<RouteOption> {
+    const candidate: RouteCandidate = {
+      controlPoints: waypoints,
+      variantIndex,
+    };
     const route = await fetchBRouterRoute(request, candidate).catch(
       async (brouterError: unknown) => {
         const osrmRoute = await fetchOsrmRoute(candidate).catch((osrmError: unknown) => {
@@ -211,7 +109,7 @@ export class BRouterProvider implements RoutingProvider {
       request,
       route,
       candidate.variantIndex,
-      relaxedConstraints,
+      [],
     );
     const geometryValidation = validateRoutedGeometry(option.geometry, {
       distanceKm: option.distanceKm,
@@ -224,6 +122,19 @@ export class BRouterProvider implements RoutingProvider {
     if (!geometryValidation.accepted) {
       throw new Error(
         `Routing provider returned suspicious route geometry: ${geometryValidation.violations.join(" ")}`,
+      );
+    }
+
+    if (!request.preferences.allowFerries && option.transportSegments?.length) {
+      if (this.debugGeometry) {
+        console.debug("[routing:brouter]", {
+          routeId: option.id,
+          reason: "ferry_detected",
+          transportSegments: option.transportSegments,
+        });
+      }
+      throw new Error(
+        "ferry_detected: Route uses a ferry or non-road transport link.",
       );
     }
 
@@ -246,85 +157,6 @@ export class BRouterProvider implements RoutingProvider {
       ...validation.debug,
     });
   }
-}
-
-function buildRouteCandidates(
-  request: RouteRequest,
-  start: LatLng,
-  finish: LatLng,
-): RouteCandidate[] {
-  const isLoop =
-    request.preferences.shape === "loop" ||
-    request.preferences.shape === "current-location-loop";
-
-  return DISTANCE_VARIANTS.map((distanceMultiplier, variantIndex) => ({
-    variantIndex,
-    controlPoints: isLoop
-      ? buildLoopControlPoints(request, start, distanceMultiplier, variantIndex)
-      : buildPointToPointControlPoints(
-          request,
-          start,
-          finish,
-          distanceMultiplier,
-          variantIndex,
-        ),
-  }));
-}
-
-function buildLoopControlPoints(
-  request: RouteRequest,
-  start: LatLng,
-  distanceMultiplier: number,
-  variantIndex: number,
-): LatLng[] {
-  const targetDistanceKm = request.targetDistanceKm * distanceMultiplier;
-  const radiusKm = Math.max(targetDistanceKm / (2 * Math.PI), 1.5);
-  const seedBearing = seededBearing(request.id, variantIndex);
-  const bearings = [seedBearing, seedBearing + 120, seedBearing + 240];
-  const radiusModifiers = [
-    1 + variantIndex * 0.08,
-    0.82 + variantIndex * 0.06,
-    1.12 - variantIndex * 0.05,
-  ];
-  const viaPoints = bearings.map((bearing, index) =>
-    offsetByBearing(start, bearing, radiusKm * radiusModifiers[index]),
-  );
-
-  return [start, ...viaPoints, start];
-}
-
-function buildPointToPointControlPoints(
-  request: RouteRequest,
-  start: LatLng,
-  finish: LatLng,
-  distanceMultiplier: number,
-  variantIndex: number,
-): LatLng[] {
-  const directDistanceKm = Math.max(routeDistanceKm([start, finish]), 1);
-  const targetDistanceKm = Math.max(
-    request.targetDistanceKm * distanceMultiplier,
-    directDistanceKm,
-  );
-  const detourDistanceKm = Math.max((targetDistanceKm - directDistanceKm) * 0.35, 2);
-  const bearing = bearingBetween(start, finish);
-  const side = variantIndex % 2 === 0 ? 1 : -1;
-  const middle = offsetByBearing(
-    midpoint(start, finish),
-    bearing + 90 * side,
-    detourDistanceKm * (1 + variantIndex * 0.35),
-  );
-
-  if (variantIndex === 2) {
-    const secondMiddle = offsetByBearing(
-      midpoint(middle, finish),
-      bearing - 70,
-      detourDistanceKm * 0.65,
-    );
-
-    return [start, middle, secondMiddle, finish];
-  }
-
-  return [start, middle, finish];
 }
 
 async function fetchBRouterRoute(
@@ -369,6 +201,7 @@ async function fetchBRouterRoute(
     distanceKm: resolveRoutedDistanceKm(geometry, distanceMeters),
     durationMinutes: readDurationMinutes(feature?.properties),
     properties: feature?.properties,
+    transportSegments: detectTransportSegments(feature?.properties),
   };
 }
 
@@ -404,6 +237,7 @@ async function fetchOsrmRoute(candidate: RouteCandidate): Promise<ProviderRoute>
     distanceKm: resolveRoutedDistanceKm(geometry, route.distance),
     durationMinutes:
       route.duration !== undefined ? Math.round(route.duration / 60) : undefined,
+    transportSegments: detectTransportSegments(route),
   };
 }
 
@@ -449,12 +283,93 @@ function mapProviderRouteToOption(
     elevationProfile,
     score,
     waypoints: request.preferences.waypoints,
+    transportSegments: route.transportSegments,
+    allowsFerries: request.preferences.allowFerries,
     relaxedConstraints,
     summary:
       route.provider === "brouter"
         ? "Generated from OpenStreetMap data through BRouter."
         : "Generated through OSRM after BRouter was unavailable.",
   };
+}
+
+function detectTransportSegments(
+  metadata: unknown,
+): RouteTransportSegment[] | undefined {
+  const tags = collectTagObjects(metadata);
+  const segments: RouteTransportSegment[] = [];
+
+  for (const tag of tags) {
+    const route = normalizedTagValue(tag.route);
+    const ferry = normalizedTagValue(tag.ferry);
+    const highway = normalizedTagValue(tag.highway);
+    const publicTransport = normalizedTagValue(tag.public_transport);
+    const railway = normalizedTagValue(tag.railway);
+
+    if (route === "ferry" || ferry !== undefined) {
+      segments.push({
+        kind: "ferry",
+        description: "Ferry crossing detected in routing metadata.",
+        tags: stringifyTags(tag),
+      });
+      continue;
+    }
+
+    if (
+      highway === "services" &&
+      (publicTransport !== undefined || railway !== undefined || route !== undefined)
+    ) {
+      segments.push({
+        kind: "unsafe_transport",
+        description: "Non-road transport service link detected in routing metadata.",
+        tags: stringifyTags(tag),
+      });
+    }
+  }
+
+  return segments.length > 0 ? segments : undefined;
+}
+
+function collectTagObjects(value: unknown): Array<Record<string, unknown>> {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap(collectTagObjects);
+  }
+
+  const record = value as Record<string, unknown>;
+  const directTags =
+    record.tags && typeof record.tags === "object" && !Array.isArray(record.tags)
+      ? [record.tags as Record<string, unknown>]
+      : [];
+  const ownTags = hasTransportTagShape(record) ? [record] : [];
+  const nestedTags = Object.values(record).flatMap(collectTagObjects);
+
+  return [...ownTags, ...directTags, ...nestedTags];
+}
+
+function hasTransportTagShape(record: Record<string, unknown>): boolean {
+  return ["route", "ferry", "highway", "public_transport", "railway"].some(
+    (key) => key in record,
+  );
+}
+
+function normalizedTagValue(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim()
+    ? value.trim().toLowerCase()
+    : undefined;
+}
+
+function stringifyTags(
+  tags: Record<string, unknown>,
+): Record<string, string> | undefined {
+  const entries = Object.entries(tags)
+    .filter(([, value]) => typeof value === "string" || typeof value === "number")
+    .map(([key, value]) => [key, String(value)] as const);
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
 }
 
 function buildElevationProfileFromProviderRoute(
@@ -544,19 +459,6 @@ function estimateElevationGain(
   const variantMultiplier = [0.82, 1, 1.18][variantIndex] ?? 1;
 
   return Math.round(distanceKm * climbPerKm * variantMultiplier);
-}
-
-function rankRoutes(request: RouteRequest, routes: RouteOption[]): RouteOption[] {
-  return [...routes].sort((left, right) => {
-    const leftTargetMiss = Math.abs(left.distanceKm - request.targetDistanceKm);
-    const rightTargetMiss = Math.abs(right.distanceKm - request.targetDistanceKm);
-
-    if (leftTargetMiss !== rightTargetMiss) {
-      return leftTargetMiss - rightTargetMiss;
-    }
-
-    return right.score.overall - left.score.overall;
-  });
 }
 
 function cumulativeGeometryDistanceKm(geometry: LatLng[]): number[] {
@@ -654,47 +556,6 @@ function formatSemicolonDelimitedLonLats(points: LatLng[]): string {
 
 function formatLonLat(point: LatLng): string {
   return `${point.lng.toFixed(6)},${point.lat.toFixed(6)}`;
-}
-
-function midpoint(a: LatLng, b: LatLng): LatLng {
-  return {
-    lat: (a.lat + b.lat) / 2,
-    lng: (a.lng + b.lng) / 2,
-  };
-}
-
-function offsetByBearing(point: LatLng, bearingDegrees: number, distanceKm: number): LatLng {
-  const radians = (bearingDegrees * Math.PI) / 180;
-
-  return offsetCoordinate(
-    point,
-    Math.cos(radians) * distanceKm,
-    Math.sin(radians) * distanceKm,
-  );
-}
-
-function bearingBetween(start: LatLng, finish: LatLng): number {
-  const lat1 = toRadians(start.lat);
-  const lat2 = toRadians(finish.lat);
-  const dLng = toRadians(finish.lng - start.lng);
-  const y = Math.sin(dLng) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) -
-    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
-
-  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
-}
-
-function seededBearing(seed: string, variantIndex: number): number {
-  const hash = seed.split("").reduce((total, char) => {
-    return (total * 31 + char.charCodeAt(0)) % 360;
-  }, 43);
-
-  return (hash + variantIndex * 47) % 360;
-}
-
-function toRadians(value: number): number {
-  return (value * Math.PI) / 180;
 }
 
 function errorMessage(error: unknown): string {

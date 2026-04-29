@@ -23,6 +23,15 @@ VITE_ROUTING_PROVIDER=brouter
 VITE_GEOCODING_PROVIDER=mock
 ```
 
+## Route Planning Modes
+
+Biking Commander now separates route planning into two modes:
+
+- Reliable Mode is the default. Add a start point and manual waypoints on the map, then build a route that snaps through those waypoints on mapped roads/trails.
+- Experimental Auto-Loop generates route ideas automatically. It creates many loop candidates, routes each one through the provider, scores successful routes, and keeps the best three. Results can vary, and if no candidates work the app recommends Reliable Mode.
+
+Both modes use the same routed geometry for the map, route cards, elevation profile, local saves, and GPX export. Production routing does not fall back to straight-line geometry.
+
 ## Routing
 
 Biking Commander uses the public BRouter server for real OSM-based routing. It does not require an API key. Road routes use BRouter's `fastbike` profile, trail / MTB routes use `mtb`, and the provider abstraction still allows swapping providers later.
@@ -44,6 +53,7 @@ Troubleshooting:
 - If you just changed `.env.local`, restart `npm run dev`.
 - If BRouter is temporarily unavailable, the app tries OSRM automatically.
 - If both public routing services are unavailable, the UI shows a routing-provider error instead of drawing fake straight lines.
+- Ferries are avoided by default. Enable "Allow ferries" only when a ferry crossing is intentional.
 
 ## Scripts
 
@@ -56,12 +66,14 @@ npm run preview   # Preview the production build
 
 ## Current MVP Features
 
-- Road bike and trail / mountain-bike route modes.
-- Loop, point-to-point, current-location loop, and current-location-to-destination shapes.
+- Reliable Mode for manual waypoint route building with snap-to-road/trail routing.
+- Experimental Auto-Loop Mode with 20+ candidate loop shapes and best-three ranking.
+- Road bike and trail / mountain-bike ride types.
 - Distance target with 10% validation.
 - Optional elevation-gain range validation with a default-off D+ constraint toggle.
 - Avoid out-and-back heuristic.
 - Soft avoid-main-roads relaxation reporting.
+- Ferry and unsafe transport avoidance by default, with an explicit opt-in toggle.
 - Three route alternatives.
 - Interactive OSM map preview with route geometry and avoid-zone marking.
 - Optional waypoints: cafe, water point, viewpoint, climb, and custom.

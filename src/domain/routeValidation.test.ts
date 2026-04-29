@@ -171,6 +171,61 @@ describe("route validation", () => {
     assert.equal(alternatives[0].relaxedConstraints[0].constraint, "elevationRange");
   });
 
+  it("rejects ferry routes when ferries are not allowed", () => {
+    const request = createRequest({
+      preferences: {
+        ...createRequest().preferences,
+        allowFerries: false,
+      },
+    });
+    const validation = validateRouteOption(
+      request,
+      createRouteOption({
+        distanceKm: 60,
+        elevationGainM: 900,
+        geometry: loopGeometry(),
+        transportSegments: [
+          {
+            kind: "ferry",
+            description: "Ferry crossing detected in routing metadata.",
+            tags: { route: "ferry" },
+          },
+        ],
+      }),
+    );
+
+    assert.equal(validation.accepted, false);
+    assert.equal(validation.checks.avoidsFerries, false);
+    assert.match(validation.violations.join(" "), /ferry_detected/);
+  });
+
+  it("permits ferry routes when ferries are explicitly allowed", () => {
+    const request = createRequest({
+      preferences: {
+        ...createRequest().preferences,
+        allowFerries: true,
+      },
+    });
+    const validation = validateRouteOption(
+      request,
+      createRouteOption({
+        distanceKm: 60,
+        elevationGainM: 900,
+        geometry: loopGeometry(),
+        transportSegments: [
+          {
+            kind: "ferry",
+            description: "Ferry crossing detected in routing metadata.",
+            tags: { route: "ferry" },
+          },
+        ],
+      }),
+    );
+
+    assert.equal(validation.accepted, true);
+    assert.equal(validation.checks.avoidsFerries, true);
+  });
+
   it("relaxes avoid-main-roads as a soft preference only", () => {
     const request = createRequest();
     const result = relaxSoftPreferences(request, ["avoidMainRoads"]);
@@ -187,6 +242,7 @@ function createRequest(patch: Partial<RouteRequest> = {}): RouteRequest {
   return {
     id: "request-test",
     createdAt: "2026-04-28T00:00:00.000Z",
+    planningMode: "experimental_auto_loop",
     routeType: "road",
     targetDistanceKm: 60,
     useElevationConstraint: true,
@@ -200,6 +256,7 @@ function createRequest(patch: Partial<RouteRequest> = {}): RouteRequest {
       shape: "loop",
       avoidOutAndBack: true,
       avoidMainRoads: true,
+      allowFerries: false,
       difficulty: "endurance",
       waypoints: [],
       avoidZones: [],
@@ -209,7 +266,8 @@ function createRequest(patch: Partial<RouteRequest> = {}): RouteRequest {
 }
 
 function createRouteOption(
-  patch: Pick<RouteOption, "distanceKm" | "elevationGainM" | "geometry">,
+  patch: Pick<RouteOption, "distanceKm" | "elevationGainM" | "geometry"> &
+    Partial<RouteOption>,
 ): RouteOption {
   return {
     id: "route-test",

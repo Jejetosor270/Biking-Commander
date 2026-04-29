@@ -1,5 +1,7 @@
 export type RouteType = "road" | "trail";
 
+export type RoutePlanningMode = "reliable" | "experimental_auto_loop";
+
 export type RouteShape =
   | "loop"
   | "point-to-point"
@@ -48,14 +50,48 @@ export interface RoutePreference {
   shape: RouteShape;
   avoidOutAndBack: boolean;
   avoidMainRoads: boolean;
+  allowFerries: boolean;
   difficulty: DifficultyPreset;
   waypoints: Waypoint[];
   avoidZones: AvoidZone[];
 }
 
+export interface RouteSegment {
+  id: string;
+  from: Waypoint;
+  to: Waypoint;
+  geometry: LatLng[];
+  distanceKm: number;
+  elevationGainM: number;
+  provider: string;
+}
+
+export interface RouteCandidate {
+  id: string;
+  anchors: LatLng[];
+  shape: "triangle" | "diamond" | "lollipop";
+  targetDistanceKm: number;
+  variantIndex: number;
+}
+
+export interface RouteCandidateScore {
+  routeId: string;
+  distanceCloseness: number;
+  elevationCloseness: number;
+  outAndBackPenalty: number;
+  mainRoadPenalty: number;
+  routeTypeSuitability: number;
+  surfaceQuality: number;
+  diversity: number;
+  overall: number;
+}
+
+export type ConstraintRelaxation = RelaxedConstraint;
+
 export interface RouteRequest {
   id: string;
   createdAt: string;
+  planningMode: RoutePlanningMode;
   routeType: RouteType;
   targetDistanceKm: number;
   useElevationConstraint: boolean;
@@ -93,11 +129,18 @@ export interface RouteScore {
   overall: number;
 }
 
+export interface RouteTransportSegment {
+  kind: "ferry" | "unsafe_transport";
+  description: string;
+  tags?: Record<string, string>;
+}
+
 export type RelaxedConstraintType =
   | "avoidMainRoads"
   | "elevationRange"
   | "targetDistance"
-  | "avoidOutAndBack";
+  | "avoidOutAndBack"
+  | "distanceMismatch";
 
 export interface RelaxedConstraint {
   constraint: RelaxedConstraintType;
@@ -120,6 +163,8 @@ export interface RouteOption {
   elevationProfile: ElevationProfile;
   score: RouteScore;
   waypoints: Waypoint[];
+  transportSegments?: RouteTransportSegment[];
+  allowsFerries?: boolean;
   relaxedConstraints: RelaxedConstraint[];
   summary: string;
 }
@@ -137,6 +182,7 @@ export interface RouteValidationResult {
     elevationWithinRange: boolean;
     loopValid: boolean;
     avoidsOutAndBack: boolean;
+    avoidsFerries: boolean;
   };
   violations: string[];
 }

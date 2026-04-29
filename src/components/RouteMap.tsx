@@ -1,6 +1,7 @@
 import {
   CircleMarker,
   MapContainer,
+  Marker,
   Polygon,
   Polyline,
   TileLayer,
@@ -9,7 +10,13 @@ import {
   useMapEvents,
 } from "react-leaflet";
 import { useEffect } from "react";
-import type { AvoidZone, LatLng, RouteOption } from "../domain/types";
+import type {
+  AvoidZone,
+  LatLng,
+  RouteOption,
+  RoutePlanningMode,
+  Waypoint,
+} from "../domain/types";
 import { createSquareAvoidZone, FRANCE_SWITZERLAND_CENTER } from "../domain/geo";
 import {
   getRenderableRouteGeometry,
@@ -22,6 +29,10 @@ interface RouteMapProps {
   avoidZones: AvoidZone[];
   drawAvoidZones: boolean;
   onAddAvoidZone: (zone: AvoidZone) => void;
+  planningMode: RoutePlanningMode;
+  manualWaypoints: Waypoint[];
+  onAddPlanningPoint: (point: LatLng) => void;
+  onMovePlanningWaypoint: (waypointId: string, point: LatLng) => void;
 }
 
 export function RouteMap({
@@ -30,6 +41,10 @@ export function RouteMap({
   avoidZones,
   drawAvoidZones,
   onAddAvoidZone,
+  planningMode,
+  manualWaypoints,
+  onAddPlanningPoint,
+  onMovePlanningWaypoint,
 }: RouteMapProps) {
   const previewRoute = selectedRoute ?? routes[0];
   const routeBadge = previewRoute ? routeModeBadgeLabel(previewRoute) : null;
@@ -49,7 +64,12 @@ export function RouteMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapClickHandler drawAvoidZones={drawAvoidZones} onAddAvoidZone={onAddAvoidZone} />
+        <MapClickHandler
+          drawAvoidZones={drawAvoidZones}
+          planningMode={planningMode}
+          onAddAvoidZone={onAddAvoidZone}
+          onAddPlanningPoint={onAddPlanningPoint}
+        />
         <FitSelectedRoute selectedRoute={selectedRoute} />
 
         {routes.map((route) => (
@@ -102,6 +122,30 @@ export function RouteMap({
             <Tooltip>{zone.label}</Tooltip>
           </Polygon>
         ))}
+
+        {planningMode === "reliable"
+          ? manualWaypoints.map((waypoint) =>
+              waypoint.coordinate ? (
+                <Marker
+                  key={waypoint.id}
+                  position={toLeafletPoint(waypoint.coordinate)}
+                  draggable
+                  eventHandlers={{
+                    dragend(event) {
+                      const marker = event.target;
+                      const next = marker.getLatLng();
+                      onMovePlanningWaypoint(waypoint.id, {
+                        lat: next.lat,
+                        lng: next.lng,
+                      });
+                    },
+                  }}
+                >
+                  <Tooltip>{waypoint.label}</Tooltip>
+                </Marker>
+              ) : null,
+            )
+          : null}
       </MapContainer>
       <div className="map-status">
         <span>
@@ -115,26 +159,36 @@ export function RouteMap({
 
 function MapClickHandler({
   drawAvoidZones,
+  planningMode,
   onAddAvoidZone,
+  onAddPlanningPoint,
 }: {
   drawAvoidZones: boolean;
+  planningMode: RoutePlanningMode;
   onAddAvoidZone: (zone: AvoidZone) => void;
+  onAddPlanningPoint: (point: LatLng) => void;
 }) {
   useMapEvents({
     click(event) {
-      if (!drawAvoidZones) {
+      if (drawAvoidZones) {
+        onAddAvoidZone(
+          createSquareAvoidZone(
+            { lat: event.latlng.lat, lng: event.latlng.lng },
+            `Avoid zone ${new Date().toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}`,
+          ),
+        );
         return;
       }
 
-      onAddAvoidZone(
-        createSquareAvoidZone(
-          { lat: event.latlng.lat, lng: event.latlng.lng },
-          `Avoid zone ${new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}`,
-        ),
-      );
+      if (planningMode === "reliable") {
+        onAddPlanningPoint({
+          lat: event.latlng.lat,
+          lng: event.latlng.lng,
+        });
+      }
     },
   });
 
